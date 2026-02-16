@@ -25,7 +25,6 @@ public class LibraryAPI {
     }
 
     public ApiResponse<AddBookResponse> addBook(AddBookRequest request) {
-        // 2. Dynamic endpoint path
         Response response = given().spec(requestSpec).body(request)
                 .when().post(ConfigReader.getProperty("endpoint.add"));
         return new ApiResponse<>(response.getStatusCode(), response.as(AddBookResponse.class));
@@ -44,7 +43,6 @@ public class LibraryAPI {
             return new ApiResponse<>(response.getStatusCode(), java.util.Collections.emptyList());
         }
 
-        // Now it's safe to deserialize as an Array
         List<BookByIDResponse> body = Arrays.asList(response.as(BookByIDResponse[].class));
         return new ApiResponse<>(response.getStatusCode(), body);
     }
@@ -58,7 +56,6 @@ public class LibraryAPI {
     }
 
     public ApiResponse<DeleteBookResponse> deleteBook(DeleteBookRequest request) {
-        // 4. Dynamic endpoint path
         Response response = given().spec(requestSpec).body(request)
                 .when().post(ConfigReader.getProperty("endpoint.delete"));
         return new ApiResponse<>(response.getStatusCode(), response.as(DeleteBookResponse.class));

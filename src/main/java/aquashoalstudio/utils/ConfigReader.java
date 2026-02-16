@@ -1,19 +1,22 @@
 package aquashoalstudio.utils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
-    private static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
-    // This static block runs once when the class is first loaded
     static {
-        try (FileInputStream fis = new FileInputStream("config.properties")) {
-            properties.load(fis);
+        try (InputStream is = ConfigReader.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (is != null) {
+                properties.load(is);
+                System.out.println("--- Successfully loaded config.properties from resources ---");
+            } else {
+                System.err.println("CRITICAL: config.properties not found in resources! Using hardcoded fallbacks.");
+            }
         } catch (IOException e) {
-            // This prints to your console if the file isn't in the project root
-            System.err.println("CRITICAL: config.properties not found! Using hardcoded fallbacks.");
+            System.err.println("CRITICAL: Error reading config.properties: " + e.getMessage());
         }
     }
 
@@ -25,14 +28,14 @@ public class ConfigReader {
         String value = properties.getProperty(key);
 
         if (value == null) {
-            // Safety net: prevents "Base URI cannot be null" error
+            // Safety net: ensures the framework doesn't crash if a key is missing
             switch (key) {
                 case "base.uri": return "http://216.10.245.166";
                 case "endpoint.add": return "/Library/Addbook.php";
                 case "endpoint.get": return "/Library/GetBook.php";
                 case "endpoint.delete": return "/Library/DeleteBook.php";
                 default:
-                    System.err.println("Warning: Key [" + key + "] not found!");
+                    System.err.println("Warning: Key [" + key + "] not found in config!");
                     return "";
             }
         }

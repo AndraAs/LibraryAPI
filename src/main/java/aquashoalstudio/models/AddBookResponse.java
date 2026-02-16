@@ -14,5 +14,5 @@ public class AddBookResponse {
     private String msg;
 
     @JsonProperty("ID")
-    private String ID;
+    private String id;
 }

@@ -38,7 +38,7 @@ public class LibraryTests extends BaseTest {
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
         Assert.assertEquals(apiResponse.getBody().getMsg(), "successfully added");
 
-        bookID = apiResponse.getBody().getID();
+        bookID = apiResponse.getBody().getId();
         Assert.assertNotNull(bookID);
     }
 
