@@ -6,8 +6,9 @@ public class BaseTest {
 
     @BeforeSuite
     public void globalSetup() {
-        // High-level design: You could load environment variables or
-        // properties files here in the future.
-        System.out.println("--- Starting Library API Test Suite ---");
+        // Check if a System property exists (for CI/CD)
+        // usage: mvn test -Denv=staging
+        String env = System.getProperty("env", "local");
+        System.out.println("--- Running tests in " + env + " environment ---");
     }
 }
