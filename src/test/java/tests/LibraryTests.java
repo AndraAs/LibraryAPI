@@ -74,4 +74,16 @@ public class LibraryTests extends BaseTest {
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
         Assert.assertTrue(apiResponse.getBody().getMsg().contains("deleted"));
     }
+
+    @Test(priority = 5, description = "Verify behavior when searching for a non-existent Book ID")
+    public void testGetNonExistentBook() {
+        // Use 'libraryAPI' (the instance variable you initialized in @BeforeClass)
+        ApiResponse<List<BookByIDResponse>> response = libraryAPI.getBookByID("non_existent_id_999");
+
+        if (response.getStatusCode() == 200) {
+            Assert.assertTrue(response.getBody().isEmpty(), "Expected an empty list for a non-existent Book ID");
+        } else {
+            Assert.assertEquals(response.getStatusCode(), 404, "Expected 404 Not Found for invalid ID");
+        }
+    }
 }

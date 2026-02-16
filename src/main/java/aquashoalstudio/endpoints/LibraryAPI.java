@@ -2,7 +2,7 @@ package aquashoalstudio.endpoints;
 
 import aquashoalstudio.models.*;
 import aquashoalstudio.utils.ApiResponse;
-import aquashoalstudio.utils.ConfigReader; // Assuming you put ConfigReader here
+import aquashoalstudio.utils.ConfigReader;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -14,13 +14,12 @@ import static io.restassured.RestAssured.given;
 
 public class LibraryAPI {
 
-    // 1. Dynamic Base URI from config.properties
-    private static final String BASE_URI = ConfigReader.getProperty("base.uri");
     private final RequestSpecification requestSpec;
 
     public LibraryAPI() {
+        String baseUri = ConfigReader.getProperty("base.uri");
         this.requestSpec = new RequestSpecBuilder()
-                .setBaseUri(BASE_URI)
+                .setBaseUri(baseUri)
                 .setContentType(ContentType.JSON)
                 .build();
     }
@@ -33,10 +32,19 @@ public class LibraryAPI {
     }
 
     public ApiResponse<List<BookByIDResponse>> getBookByID(String id) {
-        // 3. Dynamic endpoint path
-        Response response = given().spec(requestSpec).queryParam("ID", id)
-                .when().get(ConfigReader.getProperty("endpoint.get"));
+        Response response = given()
+                .spec(requestSpec)
+                .queryParam("ID", id)
+                .when()
+                .get(ConfigReader.getProperty("endpoint.get"));
 
+        String responseString = response.getBody().asString();
+
+        if (responseString.contains("\"msg\"") || response.getStatusCode() != 200) {
+            return new ApiResponse<>(response.getStatusCode(), java.util.Collections.emptyList());
+        }
+
+        // Now it's safe to deserialize as an Array
         List<BookByIDResponse> body = Arrays.asList(response.as(BookByIDResponse[].class));
         return new ApiResponse<>(response.getStatusCode(), body);
     }
