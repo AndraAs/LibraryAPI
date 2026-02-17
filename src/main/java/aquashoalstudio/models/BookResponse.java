@@ -2,13 +2,18 @@ package aquashoalstudio.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class BookByAuthorResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class BookResponse {
+
     @JsonProperty("book_name")
-    @JsonAlias({"Name", "book_name"})
-    private String name;
+    @JsonAlias({"Name", "book_name"}) // Handles both endpoints
+    private String bookName;
 
     @JsonProperty("isbn")
     @JsonAlias({"Isbn", "isbn"})
@@ -17,4 +22,7 @@ public class BookByAuthorResponse {
     @JsonProperty("aisle")
     @JsonAlias({"Aisle", "aisle"})
     private String aisle;
+
+    @JsonProperty("author")
+    private String author;
 }

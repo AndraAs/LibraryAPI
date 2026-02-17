@@ -8,6 +8,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -27,37 +28,51 @@ public class LibraryAPI {
     public ApiResponse<AddBookResponse> addBook(AddBookRequest request) {
         Response response = given().spec(requestSpec).body(request)
                 .when().post(ConfigReader.getProperty("endpoint.add"));
+
         return new ApiResponse<>(response.getStatusCode(), response.as(AddBookResponse.class));
     }
 
-    public ApiResponse<List<BookByIDResponse>> getBookByID(String id) {
-        Response response = given()
-                .spec(requestSpec)
-                .queryParam("ID", id)
-                .when()
-                .get(ConfigReader.getProperty("endpoint.get"));
+    public ApiResponse<List<BookResponse>> getBookByID(String id) {
+        Response response = given().spec(requestSpec).queryParam("ID", id)
+                .when().get(ConfigReader.getProperty("endpoint.get"));
+
+        String responseString = response.getBody().asString();
+
+        // API returns {} with a msg instead of [] when ID is missing
+        if (responseString.contains("\"msg\"") || response.getStatusCode() != 200) {
+            return new ApiResponse<>(response.getStatusCode(), Collections.emptyList());
+        }
+
+        List<BookResponse> body = Arrays.asList(response.as(BookResponse[].class));
+        return new ApiResponse<>(response.getStatusCode(), body);
+    }
+
+    public ApiResponse<List<BookResponse>> getBooksByAuthor(String authorName) {
+        Response response = given().spec(requestSpec).queryParam("AuthorName", authorName)
+                .when().get(ConfigReader.getProperty("endpoint.get"));
 
         String responseString = response.getBody().asString();
 
         if (responseString.contains("\"msg\"") || response.getStatusCode() != 200) {
-            return new ApiResponse<>(response.getStatusCode(), java.util.Collections.emptyList());
+            return new ApiResponse<>(response.getStatusCode(), Collections.emptyList());
         }
 
-        List<BookByIDResponse> body = Arrays.asList(response.as(BookByIDResponse[].class));
-        return new ApiResponse<>(response.getStatusCode(), body);
-    }
-
-    public ApiResponse<List<BookByAuthorResponse>> getBooksByAuthor(String authorName) {
-        Response response = given().spec(requestSpec).queryParam("AuthorName", authorName)
-                .when().get(ConfigReader.getProperty("endpoint.get"));
-
-        List<BookByAuthorResponse> body = Arrays.asList(response.as(BookByAuthorResponse[].class));
+        List<BookResponse> body = Arrays.asList(response.as(BookResponse[].class));
         return new ApiResponse<>(response.getStatusCode(), body);
     }
 
     public ApiResponse<DeleteBookResponse> deleteBook(DeleteBookRequest request) {
-        Response response = given().spec(requestSpec).body(request)
-                .when().post(ConfigReader.getProperty("endpoint.delete"));
-        return new ApiResponse<>(response.getStatusCode(), response.as(DeleteBookResponse.class));
+        Response response = given()
+                .spec(requestSpec)
+                .body(request)
+                .when()
+                .post(ConfigReader.getProperty("endpoint.delete"));
+
+        DeleteBookResponse body = null;
+        if (response.getStatusCode() == 200) {
+            body = response.as(DeleteBookResponse.class);
+        }
+
+        return new ApiResponse<>(response.getStatusCode(), body);
     }
 }

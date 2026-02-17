@@ -14,7 +14,7 @@ public class LibraryTests extends BaseTest {
     private String bookID;
     private String isbn;
     private String aisle;
-    private final String AUTHOR_NAME = "Johny foes";
+    private final String AUTHOR_NAME = "Blake Crouch";
 
     @BeforeClass
     public void setup() {
@@ -23,11 +23,11 @@ public class LibraryTests extends BaseTest {
 
     @Test(priority = 1, description = "Add a new book with dynamic data")
     public void addBookTest() {
-        isbn = "andra" + (System.currentTimeMillis() % 100000);
+        isbn = "test" + (System.currentTimeMillis() % 100000);
         aisle = String.valueOf((int) (Math.random() * 1000));
 
         AddBookRequest request = AddBookRequest.builder()
-                .name("Dynamic Book " + isbn)
+                .name("Dark Matter " + isbn)
                 .isbn(isbn)
                 .aisle(aisle)
                 .author(AUTHOR_NAME)
@@ -44,19 +44,19 @@ public class LibraryTests extends BaseTest {
 
     @Test(priority = 2, dependsOnMethods = "addBookTest")
     public void getBookByIDTest() {
-        ApiResponse<List<BookByIDResponse>> apiResponse = libraryAPI.getBookByID(bookID);
+        ApiResponse<List<BookResponse>> apiResponse = libraryAPI.getBookByID(bookID);
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
 
-        BookByIDResponse book = apiResponse.getBody().getFirst();
+        BookResponse book = apiResponse.getBody().getFirst();
         Assert.assertEquals(book.getIsbn(), isbn);
     }
 
     @Test(priority = 3, dependsOnMethods = "addBookTest")
     public void getBookByAuthorTest() {
-        ApiResponse<List<BookByAuthorResponse>> apiResponse = libraryAPI.getBooksByAuthor(AUTHOR_NAME);
+        ApiResponse<List<BookResponse>> apiResponse = libraryAPI.getBooksByAuthor(AUTHOR_NAME);
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
 
-        List<BookByAuthorResponse> books = apiResponse.getBody();
+        List<BookResponse> books = apiResponse.getBody();
 
         // Null-safe stream matching
         boolean found = books.stream().anyMatch(b ->
@@ -68,7 +68,7 @@ public class LibraryTests extends BaseTest {
 
     @Test(priority = 4, dependsOnMethods = "addBookTest")
     public void deleteBookTest() {
-        DeleteBookRequest request = DeleteBookRequest.builder().ID(bookID).build();
+        DeleteBookRequest request = DeleteBookRequest.builder().id(bookID).build();
         ApiResponse<DeleteBookResponse> apiResponse = libraryAPI.deleteBook(request);
 
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
@@ -77,8 +77,7 @@ public class LibraryTests extends BaseTest {
 
     @Test(priority = 5, description = "Verify behavior when searching for a non-existent Book ID")
     public void testGetNonExistentBook() {
-        // Use 'libraryAPI' (the instance variable you initialized in @BeforeClass)
-        ApiResponse<List<BookByIDResponse>> response = libraryAPI.getBookByID("non_existent_id_999");
+        ApiResponse<List<BookResponse>> response = libraryAPI.getBookByID("non_existent_id_999");
 
         if (response.getStatusCode() == 200) {
             Assert.assertTrue(response.getBody().isEmpty(), "Expected an empty list for a non-existent Book ID");
